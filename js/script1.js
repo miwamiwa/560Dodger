@@ -7,121 +7,117 @@ let s,i,u,k,m,p,f,t,x=0,y=0,c=180,g=!0,l=250,z=50;function setup(){createCanvas(
 
 let x=0;  // obstacles x displacement
 let y=0; // player y coordinate
-let r=0;
-let g=false;
 let c=180; // distance between obstacles, and also just the value 180
+let s; // noise seed
+let g = true; // game over
+let i; // a variable for my for() loops
 let l=250; // half canvas height... but also just the value 250
-let z; // ellipse radius
+let z=50; // ellipse radius
 let u; // noise index relative to player's displacement
-//let k; // key is pressed
-
-let v=0;
-let p=(b)=> (pixels[b]>c);
-
-
-
-
-// a() draws a rectangle
-let a=(b,d,f)=>{
-  fill(o);
-  rect( i*c-x%c, q(2)+f, b,d );
-}
-
-// q()
-//
-// set the noise seed and returns the noise value at a previously specified index
-let q=(h)=>{
-  noiseSeed(h);
-  return noise(u)*c;
-}
-
-
-let k=(j)=>(keyIsPressed&&key==j);
-
+let k; // key is pressed
+let m; // screen section x coordinate
+let p; // scaling factor
+let f; // cave ceiling
+let t;
 // setup()
 // creates drawing area
 function setup(){
   createCanvas(800,500);
+  noStroke();
 }
-
-
 
 // draw()
 // is the game loop
 function draw(){
 
+  // draw background
+  background(c);
+  k=keyIsPressed; // this is better than writing keyIsPressed twice
+  t=x;
+  // if game is running
   if(!g){
 
-  background(c);
     // ********* player update:
 
     // check key inputs
-    if(k('s')&&v<6) v++;
-    if(k('w')&&v>-8) v--;
-    if(v<0)  v+=.3; //decelerate after moving up
+    if(k){
+      if(key=='s') y+=6;
+      if(key=='w') y-=6;
+    }
+    // make player fall
+    y+=2;
 
-    // update player y and make them fall
-    y+=v +2;
 
     // ********* platforms & background update:
-    z=40; // player size
+
     // move everything over to the left
     x+=7;
-
 
     // divide screen width into 8 sections
     for(i=0; i<8; i++){
 
-      u=i-floor((-x-1)/c);
-      o=9;
+      m=i*c-x%c;  // section X coordinate
+      p=x/l; // scaling factor (platforms get larger and cave gets more narrow)
+      u=floor((-x-1)/c); // u gives me the noise index for this part of the screen when subtracted from i
+      f=q(2); // cave insides' distance from the top of the canvas
+
       // ********* draw cave inside:
-      a( c, 350-x/l,0 );
-      // draw score
-        text(x,9,9);
+      fill(0,z);
+      // ( cave gets smaller as the game unfolds )
+      rect( m, f, c, 350-p );
+
       // ********* draw platform:
 
       // if this is one of the first 6 platforms, don't draw the friggen platform
       if(6-i<x/c){
-
-        o=c;
-
-        if(u%8>6){
-
-          o="#5a5";
-
-          if(r>x){
-            o=0;
-            z=20;
-          }
-        }
-
-      a( 9,q(0),q(1)*2);
+        fill(c);
+        rect(m,f+q(1)*2,9+p,q(0)*0.7+p);
       }
     }
 
 
-
     // ********* draw player
-    fill("#bc18");
-    rect(l,y+l,z,z,l);
+    fill("#c338");
+    ellipse(l,y+l,z,z);
 
 
     // ********* check for game over:
 
     // load pixels
     loadPixels();
-  //  p=pixels;
-    for(i=0; i<1600000; i+=4){
-      if(p(i)) g = !0;
-      if(p(i+1)) r=x+c*3;
-    }
+
+    for(i=0; i<1600000; i+=4)
     // if we find a red value anywhere that exceeds the background color,
     // then the player overlapped something and game is over.
+    if(pixels[i]>c+1) g = true;
 
   }
 
-  if(k('r')){
-    y=0; g=0; x=0; r=0;
+
+  // ********* while game isn't running:
+  else{
+
+    // add reset instructions to score text
+    t=x+". hit R";
+
+    // reset game on key press
+    if(k&&key=='r'){
+      g = !g; // gameover is false
+      x=0; // reset obstacle spawn offset
+      y=0; // reset player position
+      s=random(c); // pick a new noise seed to start from
+    }
   }
 
+  // ********* display score || reset text (running or not)
+  fill(z);
+  text(t,z,z);
+}
+
+// q()
+//
+// set the noise seed and returns the noise value at a previously specified index
+function q(h){
+  noiseSeed(s+h);
+  return noise(i-u)*c;
 }

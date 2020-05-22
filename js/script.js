@@ -1,123 +1,123 @@
 /*
-554 characters
+551 characters
 
-let s,i,u,k,m,p,f,t,x=0,y=0,c=180,g=!0,l=250,z=50;function setup(){createCanvas(800,500),noStroke()}function draw(){if(background(c),k=keyIsPressed,t=x,g)t=x+". hit R",k&&"r"==key&&(g=!g,x=0,y=0,s=random(c));else{for(k&&("s"==key&&(y+=6),"w"==key&&(y-=6)),y+=2,x+=7,i=0;i<8;i++)m=i*c-x%c,p=x/l,u=floor((-x-1)/c),f=q(2),fill(0,z),rect(m,f,c,350-p),6-i<x/c&&(fill(c),rect(m,f+2*q(1),9+p,.7*q(0)+p));for(fill("#c338"),ellipse(l,y+l,z,z),loadPixels(),i=0;i<16e5;i+=4)pixels[i]>c+1&&(g=!0)}fill(z),text(t,z,z)}function q(e){return noiseSeed(s+e),noise(i-u)*c}
-
+let x=0,y=0,r=0,g=!1,c=180,l=250,v=0,p=i=>pixels[i]>c,a=(e,l,r)=>{fill(o),rect(i*c-x%c,q(2)+r,e,l)},q=i=>noise(u+i*i)*c,k=i=>keyIsPressed&&key==i;function setup(){createCanvas(800,500)}function draw(){if(!g){for(background(c),k("s")&&v<6&&v++,k("w")&&v>-8&&v--,v<0&&(v+=.3),y+=v+2,z=40,x+=7,i=0;i<8;i++)u=i-floor((-x-1)/c),o=9,a(c,350-x/l,0),text(x,9,9),6-i<x/c&&(o=c,u%8>6&&(o="#5a5",r>x&&(o=0,z=20)),a(9,.8*q(0),1.5*q(1)));for(fill("#bc18"),rect(l,y+l,z,z,l),loadPixels(),i=0;i<16e5;i+=4)p(i)&&(g=!0),p(i+1)&&(r=x+5*c)}k("r")&&(y=0,g=0,x=0,r=0,v=0)}
 */
 
 let x=0;  // obstacles x displacement
 let y=0; // player y coordinate
-let c=180; // distance between obstacles, and also just the value 180
-let s; // noise seed
-let g = true; // game over
-let i; // a variable for my for() loops
-let l=250; // half canvas height... but also just the value 250
-let z=50; // ellipse radius
-let u; // noise index relative to player's displacement
-let k; // key is pressed
-let m; // screen section x coordinate
-let p; // scaling factor
-let f; // cave ceiling
-let t;
+let r=0; // buff end time
+let g=false; // game over
+let c=180; // distance between obstacles
+let l=250; // a value that comes up a few times
+let v=0; // velocity
+
+
+// p()
+// verifies if a given value in the pixels[] array exceeds 180
+let p=(b)=> (pixels[b]>c);
+
+// a()
+// draws a filled rectangle
+let a=(b,d,f)=>{
+  fill(o);
+  rect( i*c-x%c, q(2)+f, b,d );
+}
+
+// q()
+// get a noise value at index u, the starting value being h*h
+let q=(h)=> noise(u+h*h)*c;
+
+
+// k()
+// check if key is pressed and matches input
+let k=(j)=>(keyIsPressed&&key==j);
+
 // setup()
 // creates drawing area
 function setup(){
   createCanvas(800,500);
-  noStroke();
 }
 
 // draw()
 // is the game loop
 function draw(){
 
-  // draw background
-  background(c);
-  k=keyIsPressed; // this is better than writing keyIsPressed twice
-  t=x;
   // if game is running
   if(!g){
 
-    // ********* player update:
+  background(c);
 
-    // check key inputs
-    if(k){
-      if(key=='s') y+=6;
-      if(key=='w') y-=6;
-    }
-    // make player fall
-    y+=2;
+    z=40; // player size
 
+    // check key inputs & update velocity
+    if(k('s')&&v<6) v+=0.8;
+    if(k('w')&&v>-8) v-=1.2;
 
-    // ********* platforms & background update:
+    if(v<0)  v+=.3; //decelerate if moving up
+    y+=v +2; // update player y and make them fall
 
-    // move everything over to the left
-    x+=7;
+    x+=7; // move decor over to the left
+
 
     // divide screen width into 8 sections
     for(i=0; i<8; i++){
 
-      m=i*c-x%c;  // section X coordinate
-      p=x/l; // scaling factor (platforms get larger and cave gets more narrow)
-      u=floor((-x-1)/c); // u gives me the noise index for this part of the screen when subtracted from i
-      f=q(2); // cave insides' distance from the top of the canvas
+      // calculate noise index for this part of the screen
+      u=i-floor((-x-1)/c);
 
-      // ********* draw cave inside:
-      fill(0,z);
-      // ( cave gets smaller as the game unfolds )
-      rect( m, f, c, 350-p );
+      // cave insides:
 
-      // ********* draw platform:
+      o=9; // set rectangle fill
+      a( c, 350-x/l,0 ); // draw rectangle
 
-      // if this is one of the first 6 platforms, don't draw the friggen platform
+      text(x,9,9);  // draw score
+
+      // platforms:
+
+      // don't draw first few platforms
       if(6-i<x/c){
-        fill(c);
-        rect(m,f+q(1)*2,9+p,q(0)*0.7+p);
+
+        o=c; // set platform fill
+
+        if(u%8>6){ // every now and then
+
+          o="#5a5"; // set platform fill to green
+
+          if(r>x){ // if buff is active
+            o=0; // platform fill is black
+            z=20; // player size is small
+          }
+        }
+
+      a( 9,q(0)*0.6,q(1)*1.5); // draw platform
       }
     }
 
+    // draw player
+    fill("#bc18");
+    rect(l,y+l,z,z,l);
 
-    // ********* draw player
-    fill("#c338");
-    ellipse(l,y+l,z,z);
 
-
-    // ********* check for game over:
+    // collision:
 
     // load pixels
     loadPixels();
 
-    for(i=0; i<1600000; i+=4)
-    // if we find a red value anywhere that exceeds the background color,
-    // then the player overlapped something and game is over.
-    if(pixels[i]>c+1) g = true;
-
-  }
-
-
-  // ********* while game isn't running:
-  else{
-
-    // add reset instructions to score text
-    t=x+". hit R";
-
-    // reset game on key press
-    if(k&&key=='r'){
-      g = !g; // gameover is false
-      x=0; // reset obstacle spawn offset
-      y=0; // reset player position
-      s=random(c); // pick a new noise seed to start from
+    // look through pixels:
+    for(i=0; i<1600000; i+=4){
+      if(p(i)) g = !0; // red overlap: game is over
+      if(p(i+1)) r=x+c*5; // green overlap: set buff duration (buff is active)
     }
   }
 
-  // ********* display score || reset text (running or not)
-  fill(z);
-  text(t,z,z);
-}
+  // press r at any time to restart this level
+ if(k('r')){
+    y=0;
+    g=0;
+    x=0;
+    r=0;
+    v=0;
+  }
 
-// q()
-//
-// set the noise seed and returns the noise value at a previously specified index
-function q(h){
-  noiseSeed(s+h);
-  return noise(i-u)*c;
 }
